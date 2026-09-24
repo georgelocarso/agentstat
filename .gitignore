@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+.env*
+*.sock
+*.db
+.hud/
+coverage/
+.DS_Store
+Thumbs.db
