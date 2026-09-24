@@ -1,12 +1,20 @@
-# Agent Status (`agentstat`) - PoC
+# agentstat
 
-Lightweight, low-footprint monitoring daemon and real-time dashboard companion designed to track background AI coding agent sessions (`agy` / Antigravity CLI).
+A lightweight local daemon and real-time dashboard companion for tracking AI coding agent sessions (`agy` / Antigravity CLI).
 
-## Architecture
+---
 
-- `packages/shared`: Shared types, event contracts, PII path sanitization (`~/...`), and API token scrubbers.
-- `packages/daemon`: CLI runner (`hud run`, `hud start`, `hud status`), PTY wrapper, prompt sniffer, in-memory session registry with automated lifecycle cleanup (15m stale / 1h purge), and SSE broadcaster.
-- `packages/web`: Responsive mobile-friendly React + Vite dashboard, Web Audio chime synthesis, Web Notifications, and priority sorting.
+## Features
+
+- **Zero-Config Discovery**: Automatically monitors all background `agy` agent sessions on your machine.
+- **Real-Time Web HUD**: Live dashboard updating instantly via Server-Sent Events (SSE).
+- **Interactive Status Filter Bar**: Easily filter sessions by state (`All`, `Pending Approval`, `Working`, `Idle (Ready)`, `Completed`, `Crashed`, `Archived`).
+- **Prompt & Output Previews**: Shows user requests alongside the latest agent response in real time.
+- **Audio Chimes & Push Alerts**: Plays a gentle Web Audio chime and desktop notification when an agent requires approval.
+- **Privacy & Security**: Automatically sanitizes system paths (`~/...`) and scrubs secret API tokens (`sk-*`, `AIza*`, Bearer tokens).
+- **LAN / Mobile Support**: Access your dashboard securely from a phone or tablet with ephemeral token authentication.
+
+---
 
 ## Quick Start
 
@@ -16,22 +24,27 @@ pnpm install
 pnpm build
 ```
 
-### 2. Run Tests
+### 2. Start the Dashboard
 ```bash
-pnpm test
+pnpm dev
 ```
+Open **[http://127.0.0.1:4111](http://127.0.0.1:4111)** in your browser.
 
-### 3. Start the Collector Daemon & Web HUD
-```bash
-# Simple single command from root:
-pnpm run dev
+---
 
-# Or expose on LAN / Tailscale with ephemeral token auth:
-pnpm run dev -- --lan
-```
+## Common Commands
 
-### 4. Run an Agent with Interception
-```bash
-# Intercept agy execution
-pnpm --filter @agentstat/daemon run dev run -- agy
-```
+| Command | Description |
+| :--- | :--- |
+| `pnpm dev` | Starts daemon & serves Web HUD on port `4111` |
+| `pnpm dev -- --port 4112` | Starts on a custom port |
+| `pnpm dev -- --lan` | Enables LAN / Tailscale access with a secure auth token |
+| `pnpm --filter @agentstat/daemon run dev status` | Lists active sessions directly in your terminal |
+| `pnpm test` | Runs the test suite |
+
+---
+
+## How It Works
+
+1. **Daemon**: Watches local agent transcript logs (`~/.gemini/antigravity-cli/brain`) and streams state transitions with negligible CPU and < 50MB RAM footprint.
+2. **Web HUD**: Built with React + Vite + Tailwind CSS, served directly by the local daemon.
