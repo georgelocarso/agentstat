@@ -128,7 +128,7 @@ Because this repository will be public open source, strict guardrails are enforc
 * Lightweight server running on port `4111` (configurable).
 * Binds to `127.0.0.1` by default, or `0.0.0.0` when `--lan` is specified.
 * Maintains an in-memory session registry with automated cleanup:
-  * Transitions inactive sessions to `stale` after 15 minutes of inactivity.
+  * Transitions inactive working, approval-waiting, and idle sessions to `stale` (displayed as Archived) after 1 hour of inactivity.
   * Purges finished sessions after 1 hour.
 * Endpoints:
   * `POST /api/events`: Ingests lifecycle updates from the PTY runner.
@@ -154,7 +154,7 @@ Because this repository will be public open source, strict guardrails are enforc
 | `waiting_approval` | PTY intercepts confirmation prompt | High-contrast Amber badge | Audio chime + Desktop notification |
 | `completed` | Process terminates with exit code 0 | Green badge | Subtle chime (optional) |
 | `crashed` | Process terminates with non-zero exit code | Red badge | Error alert |
-| `stale` | No stream activity for > 15 minutes | Muted Grey | Silent |
+| `stale` | No stream activity for > 1 hour | Muted Grey | Silent |
 
 ### 6.2 Event Payload Data Contract (Sanitized)
 ```json

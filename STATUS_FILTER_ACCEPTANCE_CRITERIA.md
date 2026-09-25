@@ -14,7 +14,7 @@ The **Status Filter Component** ([`StatusFilterBar.tsx`](file:///C:/Data/Project
   * **Active / Working** (`working`)
   * **Completed** (`completed`)
   * **Crashed** (`crashed`)
-  * **Archived / Stale** (`stale`)
+  * **Archived** (`stale`)
 * [x] **Live Counter Pill**: Each status button displays a count badge showing the exact number of matching sessions in real time.
 
 ### 1.2 Interactive Visual States

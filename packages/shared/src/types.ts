@@ -48,6 +48,6 @@ export interface CollectorConfig {
   host: string;
   lan: boolean;
   token?: string;
-  staleTimeoutMs: number;  // Default: 15 minutes
+  staleTimeoutMs: number;  // Default: 1 hour
   purgeTimeoutMs: number;  // Default: 1 hour
 }

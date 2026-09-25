@@ -7,7 +7,7 @@ export class SessionRegistry extends EventEmitter {
   private readonly staleTimeoutMs: number;
   private readonly purgeTimeoutMs: number;
 
-  constructor(staleTimeoutMs = 15 * 60 * 1000, purgeTimeoutMs = 60 * 60 * 1000) {
+  constructor(staleTimeoutMs = 60 * 60 * 1000, purgeTimeoutMs = 60 * 60 * 1000) {
     super();
     this.staleTimeoutMs = staleTimeoutMs;
     this.purgeTimeoutMs = purgeTimeoutMs;
@@ -77,8 +77,12 @@ export class SessionRegistry extends EventEmitter {
         continue;
       }
 
-      // Mark working/waiting_approval as stale if no activity for staleTimeoutMs
-      if ((session.state === 'working' || session.state === 'waiting_approval') && age > this.staleTimeoutMs) {
+      // Archive sessions with no activity for staleTimeoutMs. Completed/crashed
+      // sessions remain available until the purge timeout.
+      if (
+        (session.state === 'working' || session.state === 'waiting_approval' || session.state === 'idle') &&
+        age > this.staleTimeoutMs
+      ) {
         session.state = 'stale';
         this.sessions.set(id, session);
         this.emit('session_update', session);
