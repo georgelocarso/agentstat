@@ -1,6 +1,6 @@
 {
   "name": "agentstat-monorepo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Lightweight monitoring daemon and real-time dashboard companion for AI coding agents",
   "packageManager": "pnpm@10.30.0",

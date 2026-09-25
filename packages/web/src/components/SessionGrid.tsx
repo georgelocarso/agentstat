@@ -6,11 +6,16 @@ import { Bot } from 'lucide-react';
 interface SessionGridProps {
   sessions: SessionSnapshot[];
   emptyMessage?: string;
+  pinnedSessionIds: Set<string>;
+  onTogglePinned: (sessionId: string) => void;
 }
 
-export const SessionGrid: React.FC<SessionGridProps> = ({ sessions, emptyMessage }) => {
+export const SessionGrid: React.FC<SessionGridProps> = ({ sessions, emptyMessage, pinnedSessionIds, onTogglePinned }) => {
   // Sort with priority: waiting_approval first, then working, then most recent
   const sorted = [...sessions].sort((a, b) => {
+    if (pinnedSessionIds.has(a.sessionId) !== pinnedSessionIds.has(b.sessionId)) {
+      return pinnedSessionIds.has(a.sessionId) ? -1 : 1;
+    }
     if (a.state === 'waiting_approval' && b.state !== 'waiting_approval') return -1;
     if (b.state === 'waiting_approval' && a.state !== 'waiting_approval') return 1;
     if (a.state === 'working' && b.state !== 'working') return -1;
@@ -39,7 +44,12 @@ export const SessionGrid: React.FC<SessionGridProps> = ({ sessions, emptyMessage
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {sorted.map((session) => (
-        <SessionCard key={session.sessionId} session={session} />
+        <SessionCard
+          key={session.sessionId}
+          session={session}
+          pinned={pinnedSessionIds.has(session.sessionId)}
+          onTogglePinned={onTogglePinned}
+        />
       ))}
     </div>
   );

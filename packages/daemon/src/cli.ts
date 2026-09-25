@@ -30,7 +30,7 @@ program
       host,
       lan,
       token: options.token,
-      staleTimeoutMs: 15 * 60 * 1000,
+      staleTimeoutMs: 60 * 60 * 1000,
       purgeTimeoutMs: 60 * 60 * 1000,
     };
 
@@ -42,6 +42,9 @@ program
     const { TranscriptWatcher } = await import('./watcher/transcript-watcher.js');
     const watcher = new TranscriptWatcher(registry);
     watcher.start();
+    const { CodexRolloutWatcher } = await import('./watcher/codex-rollout-watcher.js');
+    const codexWatcher = new CodexRolloutWatcher(registry);
+    codexWatcher.start();
 
     const server = app.listen(port, host, () => {
       console.log(`\n\x1b[36m⚡ [agentstat] Collector Daemon running on http://${host}:${port}\x1b[0m`);

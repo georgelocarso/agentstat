@@ -18,12 +18,20 @@ interface StatusFilterBarProps {
   selectedStatus: StatusFilterValue;
   onSelectStatus: (status: StatusFilterValue) => void;
   statusCounts: Record<StatusFilterValue, number>;
+  selectedAgent: string;
+  onSelectAgent: (agent: string) => void;
+  agentTypes: string[];
+  agentCounts: Record<string, number>;
 }
 
 export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
   selectedStatus,
   onSelectStatus,
   statusCounts,
+  selectedAgent,
+  onSelectAgent,
+  agentTypes,
+  agentCounts,
 }) => {
   const filters: StatusFilterItem[] = [
     {
@@ -82,7 +90,7 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
     },
     {
       id: 'stale',
-      label: 'Archived / Stale',
+      label: 'Archived',
       icon: Clock,
       count: statusCounts.stale,
       activeColor: 'text-slate-400',
@@ -92,7 +100,7 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
   ];
 
   return (
-    <div className="w-full overflow-x-auto pb-2 scrollbar-none">
+    <div className="w-full flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
       <nav
         aria-label="Filter sessions by status"
         className="flex items-center gap-2 p-1 rounded-xl bg-slate-900/60 border border-slate-800/90 w-max min-w-full sm:min-w-0"
@@ -132,6 +140,22 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
           );
         })}
       </nav>
+      <label className="flex items-center gap-2 shrink-0 rounded-xl bg-slate-900/60 border border-slate-800/90 px-3 py-1.5 text-xs text-slate-400">
+        <span className="whitespace-nowrap">Agent</span>
+        <select
+          aria-label="Filter sessions by agent"
+          value={selectedAgent}
+          onChange={(event) => onSelectAgent(event.target.value)}
+          className="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer"
+        >
+          <option value="all" className="bg-slate-900">All agents ({statusCounts.all})</option>
+          {agentTypes.map((agentType) => (
+            <option key={agentType} value={agentType} className="bg-slate-900">
+              {agentType} ({agentCounts[agentType]})
+            </option>
+          ))}
+        </select>
+      </label>
     </div>
   );
 };

@@ -1,13 +1,15 @@
 import React from 'react';
 import type { SessionSnapshot } from '@agentstat/shared';
 import { StateBadge } from './StateBadge';
-import { GitBranch, Folder, Terminal, Clock, CheckCircle2 } from 'lucide-react';
+import { GitBranch, Folder, Terminal, Clock, CheckCircle2, Pin } from 'lucide-react';
 
 interface SessionCardProps {
   session: SessionSnapshot;
+  pinned: boolean;
+  onTogglePinned: (sessionId: string) => void;
 }
 
-export const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
+export const SessionCard: React.FC<SessionCardProps> = ({ session, pinned, onTogglePinned }) => {
   const isWaiting = session.state === 'waiting_approval';
   const startedFormatted = new Date(session.startedAt).toLocaleTimeString();
   const lastSeenFormatted = new Date(session.lastSeenAt).toLocaleTimeString();
@@ -21,7 +23,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
       }`}
     >
       <div className="flex items-start justify-between gap-4 mb-3">
-        <div>
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-lg text-slate-100 flex items-center gap-2">
               <Folder className="w-4 h-4 text-indigo-400" />
@@ -33,7 +35,18 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session }) => {
           </div>
           <p className="text-xs text-slate-400 font-mono mt-0.5">{session.displayPath}</p>
         </div>
-        <StateBadge state={session.state} />
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => onTogglePinned(session.sessionId)}
+            aria-label={pinned ? 'Unpin session' : 'Pin session'}
+            title={pinned ? 'Unpin session' : 'Pin session'}
+            className={`p-1.5 rounded-md transition-colors ${pinned ? 'text-amber-300 bg-amber-500/15' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'}`}
+          >
+            <Pin className={`w-4 h-4 ${pinned ? 'fill-current' : ''}`} />
+          </button>
+          <StateBadge state={session.state} />
+        </div>
       </div>
 
       {session.gitBranch && (

@@ -54,6 +54,24 @@ export function App() {
   };
 
   const [selectedStatus, setSelectedStatus] = useState<StatusFilterValue>('all');
+  const [selectedAgent, setSelectedAgent] = useState('all');
+  const [pinnedSessionIds, setPinnedSessionIds] = useState<Set<string>>(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem('agentstat_pinned_sessions') || '[]'));
+    } catch {
+      return new Set();
+    }
+  });
+
+  const togglePinned = (sessionId: string) => {
+    setPinnedSessionIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(sessionId)) next.delete(sessionId);
+      else next.add(sessionId);
+      localStorage.setItem('agentstat_pinned_sessions', JSON.stringify([...next]));
+      return next;
+    });
+  };
 
   const statusCounts: Record<StatusFilterValue, number> = {
     all: sessions.length,
@@ -65,9 +83,15 @@ export function App() {
     stale: sessions.filter((s) => s.state === 'stale').length,
   };
 
-  const filteredSessions = selectedStatus === 'all'
-    ? sessions
-    : sessions.filter((s) => s.state === selectedStatus);
+  const agentTypes = Array.from(new Set(sessions.map((session) => session.agentType).filter(Boolean))).sort();
+  const agentCounts = Object.fromEntries(
+    agentTypes.map((agentType) => [agentType, sessions.filter((session) => session.agentType === agentType).length])
+  );
+
+  const filteredSessions = sessions.filter((session) =>
+    (selectedStatus === 'all' || session.state === selectedStatus) &&
+    (selectedAgent === 'all' || session.agentType === selectedAgent)
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-[#090d16] text-slate-100">
@@ -115,13 +139,19 @@ export function App() {
           selectedStatus={selectedStatus}
           onSelectStatus={setSelectedStatus}
           statusCounts={statusCounts}
+          selectedAgent={selectedAgent}
+          onSelectAgent={setSelectedAgent}
+          agentTypes={agentTypes}
+          agentCounts={agentCounts}
         />
 
         <SessionGrid
           sessions={filteredSessions}
+          pinnedSessionIds={pinnedSessionIds}
+          onTogglePinned={togglePinned}
           emptyMessage={
-            selectedStatus !== 'all'
-              ? `No sessions found in "${selectedStatus.replace('_', ' ')}" state.`
+            selectedStatus !== 'all' || selectedAgent !== 'all'
+              ? `No sessions found for the selected filters.`
               : undefined
           }
         />
