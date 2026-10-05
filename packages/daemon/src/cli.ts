@@ -45,6 +45,15 @@ program
     const { CodexRolloutWatcher } = await import('./watcher/codex-rollout-watcher.js');
     const codexWatcher = new CodexRolloutWatcher(registry);
     codexWatcher.start();
+    const { CursorSessionWatcher } = await import('./watcher/cursor-session-watcher.js');
+    const cursorWatcher = new CursorSessionWatcher(registry);
+    cursorWatcher.start();
+    const { GrokBotBridgeWatcher } = await import('./watcher/grokbot-bridge-watcher.js');
+    const grokBotWatcher = new GrokBotBridgeWatcher(registry);
+    grokBotWatcher.start();
+    const { GrokBotSessionWatcher } = await import('./watcher/grokbot-session-watcher.js');
+    const grokBotSessions = new GrokBotSessionWatcher(registry);
+    grokBotSessions.start();
 
     const server = app.listen(port, host, () => {
       console.log(`\n\x1b[36m⚡ [agentstat] Collector Daemon running on http://${host}:${port}\x1b[0m`);
