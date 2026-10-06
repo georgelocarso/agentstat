@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgentStat E2E Review & Architecture Insights</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --border: #1f2937;
+      --border-accent: #374151;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.15);
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --blue: #3b82f6;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 2.5rem 1.5rem;
+    }
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+      margin-bottom: 2.5rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: var(--accent-light);
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      position: relative;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+    .card-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .card-tag.green { color: var(--emerald); }
+    .card-tag.amber { color: var(--amber); }
+    .card-tag.rose { color: var(--rose); }
+    .card-tag.blue { color: var(--blue); }
+    h2 {
+      font-size: 1.4rem;
+      margin: 2rem 0 1rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    h3 {
+      font-size: 1.15rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #f9fafb;
+    }
+    p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 0.85rem;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+      margin-bottom: 1rem;
+    }
+    li {
+      position: relative;
+      padding-left: 1.4rem;
+      margin-bottom: 0.55rem;
+      font-size: 0.925rem;
+      color: #d1d5db;
+    }
+    li::before {
+      content: "•";
+      position: absolute;
+      left: 0.4rem;
+      color: var(--accent-light);
+      font-weight: bold;
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.825rem;
+      background: #1e293b;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+    }
+    pre {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.825rem;
+      color: #c9d1d9;
+      margin: 0.85rem 0;
+    }
+    .pipeline {
+      background: #111827;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    .flow-steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+    .step-box {
+      flex: 1;
+      min-width: 180px;
+      background: #1f2937;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      text-align: center;
+    }
+    .step-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #f3f4f6;
+    }
+    .step-desc {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-top: 0.3rem;
+    }
+    .flow-arrow {
+      color: var(--accent-light);
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .callout {
+      background: rgba(245, 158, 11, 0.08);
+      border-left: 4px solid var(--amber);
+      padding: 1rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.5rem 0;
+    }
+    .callout-title {
+      font-weight: 600;
+      color: var(--amber);
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+    .callout p {
+      margin: 0;
+      color: #d1d5db;
+      font-size: 0.875rem;
+    }
+    footer {
+      margin-top: 4rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">Architecture & Quality Audit</div>
+      <h1>AgentStat End-to-End System Review</h1>
+      <p class="subtitle">Complete assessment of the agent monitoring pipeline, recent feature additions, identified edge cases, and proposed roadmap.</p>
+    </header>
+
+    <!-- Pipeline Flow Diagram -->
+    <div class="pipeline">
+      <div class="card-tag blue">Architectural Flow</div>
+      <h3 style="margin-top: 0.3rem;">Agent Event Pipeline: From Disk to Browser HUD</h3>
+      <div class="flow-steps">
+        <div class="step-box">
+          <div class="step-title">Agent Runtimes</div>
+          <div class="step-desc">Cursor SQLite, Grokbot files, Codex bridge logs, or CLI hooks</div>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="step-box">
+          <div class="step-title">Daemon Watchers</div>
+          <div class="step-desc">Read-only event parsers &amp; sanitize logic in <code>@agentstat/daemon</code></div>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="step-box">
+          <div class="step-title">Session Registry</div>
+          <div class="step-desc">In-memory event aggregation, stale sweeping &amp; SSE broadcast</div>
+        </div>
+        <div class="flow-arrow">➔</div>
+        <div class="step-box">
+          <div class="step-title">React Web HUD</div>
+          <div class="step-desc">Vite SPA with audio chimes, notifications, bulk actions &amp; filters</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-Column Highlights -->
+    <div class="grid">
+      <!-- Card 1 -->
+      <div class="card">
+        <div class="card-tag green">Verified Green</div>
+        <h3>Test & Build Pipeline</h3>
+        <p>The workspace compiles cleanly with full type verification and unit test coverage:</p>
+        <ul>
+          <li><strong>57 Vitest unit tests</strong> passing across <code>daemon</code> &amp; <code>shared</code> packages.</li>
+          <li>Production build generates clean asset bundles (<code>dist/</code> in 29s).</li>
+          <li>Node 22 <code>node:sqlite</code> integration passes with fallback for legacy runtimes.</li>
+        </ul>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card">
+        <div class="card-tag amber">Recent Enhancements</div>
+        <h3>Archiving & Bulk Operations</h3>
+        <p>Fresh functionality introduced in <code>@agentstat/web</code>:</p>
+        <ul>
+          <li><strong>Bulk Selection Toolbar:</strong> Checkbox controls to select individual or all filtered sessions.</li>
+          <li><strong>Batch Archive / Unarchive:</strong> Fast categorization of active vs inactive workspaces.</li>
+          <li><strong>Auto-Unarchive Mechanism:</strong> Logic in <code>useSSE</code> to restore sessions when activity restarts.</li>
+        </ul>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card">
+        <div class="card-tag rose">Edge Cases Identified</div>
+        <h3>Identified Bottlenecks</h3>
+        <p>Areas requiring attention before scaling to multi-device production:</p>
+        <ul>
+          <li><strong>Premature Auto-Unarchive:</strong> Checks only <code>lastSeenAge &lt; 1hr</code> on snapshot arrival, unarchiving manually archived sessions on page reload.</li>
+          <li><strong>Client-Only Persistence:</strong> Pin &amp; archive states exist only in <code>localStorage</code>, not shared across devices.</li>
+          <li><strong>Daemon Memory Sweep:</strong> Stale sessions remain indefinitely in memory unless purged.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Edge Case Deep Dive -->
+    <h2><span style="color: var(--amber);">⚡</span> Detailed Technical Analysis</h2>
+
+    <div class="callout">
+      <div class="callout-title">Edge Case Warning: Auto-Unarchive on Page Refresh</div>
+      <p>
+        In <code>packages/web/src/hooks/useSSE.ts</code>, when the initial snapshot arrives from the daemon, every session active within the last 60 minutes is passed to <code>onAutoUnarchive(sessionId)</code>.
+        If a user intentionally archives a recently active session and refreshes their browser, that session is immediately unarchived.
+      </p>
+    </div>
+
+    <h3>Recommended Fix for Auto-Unarchive</h3>
+    <pre><code>// packages/web/src/hooks/useSSE.ts
+// Rather than checking raw elapsed time since lastSeenAt:
+const prevState = previousStateMap.current.get(snapshot.sessionId);
+
+// Only trigger auto-unarchive on an actual transition back to active work:
+if (
+  prevState &&
+  prevState !== 'working' &&
+  prevState !== 'waiting_approval' &&
+  (snapshot.state === 'working' || snapshot.state === 'waiting_approval')
+) {
+  onAutoUnarchive?.(snapshot.sessionId);
+}</code></pre>
+
+    <!-- Next Actions Roadmap -->
+    <h2><span style="color: var(--emerald);">🚀</span> Actionable Next Steps</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>1. Commit Current Work</h3>
+        <p>Bundle the new archiving controls, bulk toolbar, and UI polish into Git commit history to lock in working functionality.</p>
+      </div>
+
+      <div class="card">
+        <h3>2. Backend State Sync</h3>
+        <p>Add <code>POST /api/sessions/:id/archive</code> and <code>POST /api/sessions/:id/pin</code> to the daemon so multi-tab and remote mobile views stay synchronized.</p>
+      </div>
+
+      <div class="card">
+        <h3>3. Session Detail Modal</h3>
+        <p>Add a slide-over drawer in the Web HUD to inspect full terminal outputs, file diffs, and historical prompt traces.</p>
+      </div>
+    </div>
+
+    <footer>
+      Generated for Agent Status (<code>agentstat</code>) • Project 2 Review • Local time: 2026-10-06
+    </footer>
+  </div>
+</body>
+</html>

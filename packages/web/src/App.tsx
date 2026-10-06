@@ -37,9 +37,46 @@ export function App() {
     [audioEnabled, sendNotification]
   );
 
+  // ── Manual archive state ─────────────────────────────────────────────────
+  const [archivedSessionIds, setArchivedSessionIds] = useState<Set<string>>(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem('agentstat_archived_sessions') || '[]'));
+    } catch {
+      return new Set();
+    }
+  });
+
+  const archiveSessions = useCallback((sessionIds: string[]) => {
+    setArchivedSessionIds((prev) => {
+      const next = new Set([...prev, ...sessionIds]);
+      localStorage.setItem('agentstat_archived_sessions', JSON.stringify([...next]));
+      return next;
+    });
+  }, []);
+
+  const unarchiveSession = useCallback((sessionId: string) => {
+    setArchivedSessionIds((prev) => {
+      if (!prev.has(sessionId)) return prev;
+      const next = new Set(prev);
+      next.delete(sessionId);
+      localStorage.setItem('agentstat_archived_sessions', JSON.stringify([...next]));
+      return next;
+    });
+  }, []);
+
+  // Auto-unarchive when a session has fresh activity (called from useSSE)
+  const handleAutoUnarchive = useCallback(
+    (sessionId: string) => {
+      unarchiveSession(sessionId);
+    },
+    [unarchiveSession]
+  );
+  // ────────────────────────────────────────────────────────────────────────
+
   const { sessions, connected } = useSSE({
     token: token || undefined,
     onApprovalRequired: handleApprovalRequired,
+    onAutoUnarchive: handleAutoUnarchive,
   });
 
   const waitingCount = sessions.filter((s) => s.state === 'waiting_approval').length;
@@ -73,14 +110,19 @@ export function App() {
     });
   };
 
+  // A session is "visually archived" if manually archived OR daemon-stale.
+  // For filtering purposes we treat both as 'stale'.
+  const isVisuallyArchived = (s: SessionSnapshot) =>
+    archivedSessionIds.has(s.sessionId) || s.state === 'stale';
+
   const statusCounts: Record<StatusFilterValue, number> = {
-    all: sessions.length,
+    all: sessions.filter((s) => !isVisuallyArchived(s)).length,
     waiting_approval: sessions.filter((s) => s.state === 'waiting_approval').length,
-    working: sessions.filter((s) => s.state === 'working').length,
-    idle: sessions.filter((s) => s.state === 'idle').length,
-    completed: sessions.filter((s) => s.state === 'completed').length,
-    crashed: sessions.filter((s) => s.state === 'crashed').length,
-    stale: sessions.filter((s) => s.state === 'stale').length,
+    working: sessions.filter((s) => s.state === 'working' && !archivedSessionIds.has(s.sessionId)).length,
+    idle: sessions.filter((s) => s.state === 'idle' && !archivedSessionIds.has(s.sessionId)).length,
+    completed: sessions.filter((s) => s.state === 'completed' && !archivedSessionIds.has(s.sessionId)).length,
+    crashed: sessions.filter((s) => s.state === 'crashed' && !archivedSessionIds.has(s.sessionId)).length,
+    stale: sessions.filter((s) => isVisuallyArchived(s)).length,
   };
 
   const agentTypes = Array.from(new Set(sessions.map((session) => session.agentType).filter(Boolean))).sort();
@@ -88,16 +130,27 @@ export function App() {
     agentTypes.map((agentType) => [agentType, sessions.filter((session) => session.agentType === agentType).length])
   );
 
-  const filteredSessions = sessions.filter((session) =>
-    (selectedStatus === 'all' || session.state === selectedStatus) &&
-    (selectedAgent === 'all' || session.agentType === selectedAgent)
-  );
+  // Filter sessions for display.
+  // "all" tab hides archived (both manual and stale).
+  // "stale" tab shows all archived sessions (both manual and stale).
+  const filteredSessions = sessions.filter((session) => {
+    const archived = isVisuallyArchived(session);
+    const agentMatch = selectedAgent === 'all' || session.agentType === selectedAgent;
+
+    if (selectedStatus === 'stale') {
+      return archived && agentMatch;
+    }
+    if (selectedStatus === 'all') {
+      return !archived && agentMatch;
+    }
+    return session.state === selectedStatus && !archivedSessionIds.has(session.sessionId) && agentMatch;
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-[#090d16] text-slate-100">
       <Header
         connected={connected}
-        activeCount={sessions.length}
+        activeCount={statusCounts.all}
         waitingCount={waitingCount}
         audioEnabled={audioEnabled}
         onToggleAudio={() => setAudioEnabled((prev) => !prev)}
@@ -149,6 +202,10 @@ export function App() {
           sessions={filteredSessions}
           pinnedSessionIds={pinnedSessionIds}
           onTogglePinned={togglePinned}
+          archivedSessionIds={archivedSessionIds}
+          onArchiveSessions={archiveSessions}
+          onUnarchiveSession={unarchiveSession}
+          isArchivedView={selectedStatus === 'stale'}
           emptyMessage={
             selectedStatus !== 'all' || selectedAgent !== 'all'
               ? `No sessions found for the selected filters.`

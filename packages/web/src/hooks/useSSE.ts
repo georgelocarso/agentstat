@@ -4,9 +4,10 @@ import type { SessionSnapshot } from '@agentstat/shared';
 interface UseSSEOptions {
   token?: string;
   onApprovalRequired?: (session: SessionSnapshot) => void;
+  onAutoUnarchive?: (sessionId: string) => void;
 }
 
-export function useSSE({ token, onApprovalRequired }: UseSSEOptions = {}) {
+export function useSSE({ token, onApprovalRequired, onAutoUnarchive }: UseSSEOptions = {}) {
   const [sessions, setSessions] = useState<SessionSnapshot[]>([]);
   const [connected, setConnected] = useState(false);
   const [lastHeartbeat, setLastHeartbeat] = useState<Date | null>(null);
@@ -29,9 +30,18 @@ export function useSSE({ token, onApprovalRequired }: UseSSEOptions = {}) {
       if (snapshot.state === 'waiting_approval' && prevState !== 'waiting_approval') {
         onApprovalRequired?.(snapshot);
       }
+
+      // Auto-unarchive only when a session genuinely transitions back to an active state
+      // (working or waiting_approval) after having previously been inactive, completed, or unobserved.
+      const isNowActive = snapshot.state === 'working' || snapshot.state === 'waiting_approval';
+      const wasInactiveOrDifferent = prevState !== undefined && prevState !== 'working' && prevState !== 'waiting_approval';
+      if (isNowActive && wasInactiveOrDifferent) {
+        onAutoUnarchive?.(snapshot.sessionId);
+      }
+
       previousStateMap.current.set(snapshot.sessionId, snapshot.state);
     },
-    [onApprovalRequired]
+    [onApprovalRequired, onAutoUnarchive]
   );
 
   useEffect(() => {

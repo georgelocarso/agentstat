@@ -1,15 +1,29 @@
 import React from 'react';
 import type { SessionSnapshot } from '@agentstat/shared';
 import { StateBadge } from './StateBadge';
-import { GitBranch, Folder, Terminal, Clock, CheckCircle2, Pin } from 'lucide-react';
+import { GitBranch, Folder, Terminal, Clock, CheckCircle2, Pin, Archive, ArchiveRestore } from 'lucide-react';
 
 interface SessionCardProps {
   session: SessionSnapshot;
   pinned: boolean;
   onTogglePinned: (sessionId: string) => void;
+  selected: boolean;
+  onToggleSelect: (sessionId: string) => void;
+  isArchived: boolean;
+  onArchive: (sessionId: string) => void;
+  onUnarchive: (sessionId: string) => void;
 }
 
-export const SessionCard: React.FC<SessionCardProps> = ({ session, pinned, onTogglePinned }) => {
+export const SessionCard: React.FC<SessionCardProps> = ({
+  session,
+  pinned,
+  onTogglePinned,
+  selected,
+  onToggleSelect,
+  isArchived,
+  onArchive,
+  onUnarchive,
+}) => {
   const isWaiting = session.state === 'waiting_approval';
   const startedFormatted = new Date(session.startedAt).toLocaleTimeString();
   const lastSeenFormatted = new Date(session.lastSeenAt).toLocaleTimeString();
@@ -17,25 +31,42 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session, pinned, onTog
   return (
     <div
       className={`rounded-xl border transition-all duration-200 p-5 ${
-        isWaiting
+        selected
+          ? 'bg-indigo-950/30 border-indigo-500/60 ring-1 ring-indigo-500/40 shadow-md shadow-indigo-950/40'
+          : isArchived
+          ? 'bg-slate-900/30 border-slate-800/60 opacity-75 hover:opacity-90'
+          : isWaiting
           ? 'bg-amber-950/20 border-amber-500/50 shadow-lg shadow-amber-950/40 ring-1 ring-amber-500/30'
           : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 shadow-md'
       }`}
     >
       <div className="flex items-start justify-between gap-4 mb-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-lg text-slate-100 flex items-center gap-2">
-              <Folder className="w-4 h-4 text-indigo-400" />
-              {session.project}
-            </h3>
-            <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
-              {session.agentType}
-            </span>
+        {/* Checkbox + project info */}
+        <div className="flex items-start gap-3 min-w-0">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={() => onToggleSelect(session.sessionId)}
+            aria-label={`Select session ${session.project}`}
+            className="mt-1 w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 accent-indigo-500 cursor-pointer shrink-0"
+          />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-lg text-slate-100 flex items-center gap-2">
+                <Folder className="w-4 h-4 text-indigo-400" />
+                {session.project}
+              </h3>
+              <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
+                {session.agentType}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 font-mono mt-0.5">{session.displayPath}</p>
           </div>
-          <p className="text-xs text-slate-400 font-mono mt-0.5">{session.displayPath}</p>
         </div>
+
+        {/* Action buttons + state badge */}
         <div className="flex items-center gap-2 shrink-0">
+          {/* Pin button */}
           <button
             type="button"
             onClick={() => onTogglePinned(session.sessionId)}
@@ -45,6 +76,30 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session, pinned, onTog
           >
             <Pin className={`w-4 h-4 ${pinned ? 'fill-current' : ''}`} />
           </button>
+
+          {/* Archive / Unarchive button */}
+          {isArchived ? (
+            <button
+              type="button"
+              onClick={() => onUnarchive(session.sessionId)}
+              aria-label="Unarchive session"
+              title="Unarchive session"
+              className="p-1.5 rounded-md transition-colors text-slate-400 hover:text-emerald-300 hover:bg-emerald-950/30"
+            >
+              <ArchiveRestore className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onArchive(session.sessionId)}
+              aria-label="Archive session"
+              title="Archive session"
+              className="p-1.5 rounded-md transition-colors text-slate-500 hover:text-amber-300 hover:bg-amber-950/30"
+            >
+              <Archive className="w-4 h-4" />
+            </button>
+          )}
+
           <StateBadge state={session.state} />
         </div>
       </div>
