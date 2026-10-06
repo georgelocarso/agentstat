@@ -1,6 +1,6 @@
 import React from 'react';
 import type { SessionState } from '@agentstat/shared';
-import { Layers, PlayCircle, AlertCircle, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Layers, PlayCircle, AlertCircle, CheckCircle2, XCircle, Clock, Search, X } from 'lucide-react';
 
 export type StatusFilterValue = 'all' | SessionState;
 
@@ -22,6 +22,8 @@ interface StatusFilterBarProps {
   onSelectAgent: (agent: string) => void;
   agentTypes: string[];
   agentCounts: Record<string, number>;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
 export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
@@ -32,6 +34,8 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
   onSelectAgent,
   agentTypes,
   agentCounts,
+  searchQuery,
+  onSearchChange,
 }) => {
   const filters: StatusFilterItem[] = [
     {
@@ -100,62 +104,87 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
   ];
 
   return (
-    <div className="w-full flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-      <nav
-        aria-label="Filter sessions by status"
-        className="flex items-center gap-2 p-1 rounded-xl bg-slate-900/60 border border-slate-800/90 w-max min-w-full sm:min-w-0"
-      >
-        {filters.map((filter) => {
-          const isSelected = selectedStatus === filter.id;
-          const Icon = filter.icon;
-          const count = filter.count ?? 0;
+    <div className="w-full flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="flex flex-wrap items-center gap-3">
+        <nav
+          aria-label="Filter sessions by status"
+          className="flex items-center gap-2 p-1 rounded-xl bg-slate-900/60 border border-slate-800/90 w-max overflow-x-auto"
+        >
+          {filters.map((filter) => {
+            const isSelected = selectedStatus === filter.id;
+            const Icon = filter.icon;
+            const count = filter.count ?? 0;
 
-          return (
-            <button
-              key={filter.id}
-              type="button"
-              role="tab"
-              aria-selected={isSelected}
-              onClick={() => onSelectStatus(filter.id)}
-              className={`group relative flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
-                isSelected ? filter.selectedClasses : filter.hoverClasses
-              }`}
-            >
-              <Icon
-                className={`w-3.5 h-3.5 transition-transform group-hover:scale-110 ${
-                  isSelected ? 'scale-105' : 'text-slate-500 group-hover:text-slate-300'
-                }`}
-              />
-              <span>{filter.label}</span>
-              <span
-                className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono leading-none transition-colors ${
-                  isSelected
-                    ? 'bg-black/30 text-white font-bold'
-                    : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-slate-200'
+            return (
+              <button
+                key={filter.id}
+                type="button"
+                role="tab"
+                aria-selected={isSelected}
+                onClick={() => onSelectStatus(filter.id)}
+                className={`group relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+                  isSelected ? filter.selectedClasses : filter.hoverClasses
                 }`}
               >
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </nav>
-      <label className="flex items-center gap-2 shrink-0 rounded-xl bg-slate-900/60 border border-slate-800/90 px-3 py-1.5 text-xs text-slate-400">
-        <span className="whitespace-nowrap">Agent</span>
-        <select
-          aria-label="Filter sessions by agent"
-          value={selectedAgent}
-          onChange={(event) => onSelectAgent(event.target.value)}
-          className="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer"
-        >
-          <option value="all" className="bg-slate-900">All agents ({statusCounts.all})</option>
-          {agentTypes.map((agentType) => (
-            <option key={agentType} value={agentType} className="bg-slate-900">
-              {agentType} ({agentCounts[agentType]})
-            </option>
-          ))}
-        </select>
-      </label>
+                <Icon
+                  className={`w-3.5 h-3.5 transition-transform group-hover:scale-110 ${
+                    isSelected ? 'scale-105' : 'text-slate-500 group-hover:text-slate-300'
+                  }`}
+                />
+                <span>{filter.label}</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono leading-none transition-colors ${
+                    isSelected
+                      ? 'bg-black/30 text-white font-bold'
+                      : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-slate-200'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+
+        <label className="flex items-center gap-2 shrink-0 rounded-xl bg-slate-900/60 border border-slate-800/90 px-3 py-1.5 text-xs text-slate-400">
+          <span className="whitespace-nowrap">Agent</span>
+          <select
+            aria-label="Filter sessions by agent"
+            value={selectedAgent}
+            onChange={(event) => onSelectAgent(event.target.value)}
+            className="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer"
+          >
+            <option value="all" className="bg-slate-900">All agents ({statusCounts.all})</option>
+            {agentTypes.map((agentType) => (
+              <option key={agentType} value={agentType} className="bg-slate-900">
+                {agentType} ({agentCounts[agentType]})
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {/* Search Input */}
+      <div className="relative min-w-[240px] md:w-72">
+        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search projects, branch, prompt... (Press /)"
+          className="w-full pl-8 pr-8 py-1.5 rounded-xl bg-slate-900/60 border border-slate-800/90 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/70 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => onSearchChange('')}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-0.5"
+            aria-label="Clear search"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
     </div>
   );
 };

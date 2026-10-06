@@ -6,6 +6,7 @@ import { SessionGrid } from './components/SessionGrid';
 import { playApprovalChime } from './utils/audio';
 import type { SessionSnapshot } from '@agentstat/shared';
 import { StatusFilterBar, StatusFilterValue } from './components/StatusFilterBar';
+import { SessionDetailModal } from './components/SessionDetailModal';
 import { KeyRound } from 'lucide-react';
 
 export function App() {
@@ -92,6 +93,12 @@ export function App() {
 
   const [selectedStatus, setSelectedStatus] = useState<StatusFilterValue>('all');
   const [selectedAgent, setSelectedAgent] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [inspectedSession, setInspectedSession] = useState<SessionSnapshot | null>(null);
+
+  // Keyboard shortcut '/' to focus search
+  const handleSearchChange = (query: string) => setSearchQuery(query);
+
   const [pinnedSessionIds, setPinnedSessionIds] = useState<Set<string>>(() => {
     try {
       return new Set(JSON.parse(localStorage.getItem('agentstat_pinned_sessions') || '[]'));
@@ -133,9 +140,20 @@ export function App() {
   // Filter sessions for display.
   // "all" tab hides archived (both manual and stale).
   // "stale" tab shows all archived sessions (both manual and stale).
+  const q = searchQuery.trim().toLowerCase();
   const filteredSessions = sessions.filter((session) => {
     const archived = isVisuallyArchived(session);
     const agentMatch = selectedAgent === 'all' || session.agentType === selectedAgent;
+
+    const matchesSearch =
+      !q ||
+      session.project.toLowerCase().includes(q) ||
+      session.displayPath.toLowerCase().includes(q) ||
+      (session.gitBranch && session.gitBranch.toLowerCase().includes(q)) ||
+      (session.promptSnippet && session.promptSnippet.toLowerCase().includes(q)) ||
+      (session.outputSnippet && session.outputSnippet.toLowerCase().includes(q));
+
+    if (!matchesSearch) return false;
 
     if (selectedStatus === 'stale') {
       return archived && agentMatch;
@@ -196,6 +214,8 @@ export function App() {
           onSelectAgent={setSelectedAgent}
           agentTypes={agentTypes}
           agentCounts={agentCounts}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
         />
 
         <SessionGrid
@@ -206,11 +226,26 @@ export function App() {
           onArchiveSessions={archiveSessions}
           onUnarchiveSession={unarchiveSession}
           isArchivedView={selectedStatus === 'stale'}
+          onInspectSession={setInspectedSession}
           emptyMessage={
-            selectedStatus !== 'all' || selectedAgent !== 'all'
-              ? `No sessions found for the selected filters.`
+            searchQuery || selectedStatus !== 'all' || selectedAgent !== 'all'
+              ? `No sessions found matching your current filter criteria.`
               : undefined
           }
+        />
+
+        <SessionDetailModal
+          session={inspectedSession}
+          onClose={() => setInspectedSession(null)}
+          pinned={inspectedSession ? pinnedSessionIds.has(inspectedSession.sessionId) : false}
+          onTogglePinned={togglePinned}
+          isArchived={inspectedSession ? archivedSessionIds.has(inspectedSession.sessionId) : false}
+          onArchive={(id) => {
+            archiveSessions([id]);
+          }}
+          onUnarchive={(id) => {
+            unarchiveSession(id);
+          }}
         />
       </main>
 

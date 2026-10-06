@@ -61,6 +61,74 @@ export function createServer(config: CollectorConfig, registry: SessionRegistry,
     });
   });
 
+  // Update session metadata (pinned, archived)
+  app.patch('/api/sessions/:id', auth.middleware(), (req: Request, res: Response) => {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const { pinned, archived } = req.body;
+    const updated = registry.updateMetadata(id, { pinned, archived });
+    if (!updated) {
+      res.status(404).json({ error: `Session ${id} not found` });
+      return;
+    }
+    res.json({ status: 'ok', session: updated });
+  });
+
+  // Bulk update sessions metadata
+  app.post('/api/sessions/bulk', auth.middleware(), (req: Request, res: Response) => {
+    const { ids, action } = req.body;
+    if (!Array.isArray(ids) || !action) {
+      res.status(400).json({ error: 'Missing required fields: ids (array), action (string)' });
+      return;
+    }
+
+    const updatedSessions = [];
+    for (const id of ids) {
+      let meta: { pinned?: boolean; archived?: boolean } = {};
+      if (action === 'archive') meta = { archived: true };
+      else if (action === 'unarchive') meta = { archived: false };
+      else if (action === 'pin') meta = { pinned: true };
+      else if (action === 'unpin') meta = { pinned: false };
+
+      const updated = registry.updateMetadata(id, meta);
+      if (updated) updatedSessions.push(updated);
+    }
+
+    res.json({ status: 'ok', updatedCount: updatedSessions.length });
+  });
+
+  // Respond to a session waiting for approval / question input
+  app.post('/api/sessions/:id/respond', auth.middleware(), (req: Request, res: Response) => {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const { answer } = req.body;
+
+    if (typeof answer !== 'string') {
+      res.status(400).json({ error: 'Missing required field: answer (string)' });
+      return;
+    }
+
+    const session = registry.getSession(id);
+    if (!session) {
+      res.status(404).json({ error: `Session ${id} not found` });
+      return;
+    }
+
+    // Record interaction and transition session to working state
+    const updated = registry.recordEvent({
+      eventId: `resp_${Date.now()}`,
+      sessionId: id,
+      agentType: session.agentType,
+      state: 'working',
+      project: session.project,
+      displayPath: session.displayPath,
+      gitBranch: session.gitBranch,
+      promptSnippet: `[User Response]: ${answer}`,
+      outputSnippet: session.outputSnippet,
+      timestamp: new Date().toISOString(),
+    });
+
+    res.json({ status: 'ok', session: updated });
+  });
+
   // Real-time SSE Stream (requires auth if remote)
   app.get('/api/events/stream', auth.middleware(), (req: Request, res: Response) => {
     res.setHeader('Content-Type', 'text/event-stream');

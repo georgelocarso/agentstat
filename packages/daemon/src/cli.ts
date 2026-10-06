@@ -54,6 +54,9 @@ program
     const { GrokBotSessionWatcher } = await import('./watcher/grokbot-session-watcher.js');
     const grokBotSessions = new GrokBotSessionWatcher(registry);
     grokBotSessions.start();
+    const { ClaudeSessionWatcher } = await import('./watcher/claude-session-watcher.js');
+    const claudeWatcher = new ClaudeSessionWatcher(registry);
+    claudeWatcher.start();
 
     const server = app.listen(port, host, () => {
       console.log(`\n\x1b[36m⚡ [agentstat] Collector Daemon running on http://${host}:${port}\x1b[0m`);

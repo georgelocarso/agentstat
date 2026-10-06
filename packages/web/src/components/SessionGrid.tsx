@@ -12,6 +12,7 @@ interface SessionGridProps {
   onArchiveSessions: (sessionIds: string[]) => void;
   onUnarchiveSession: (sessionId: string) => void;
   isArchivedView: boolean;
+  onInspectSession?: (session: SessionSnapshot) => void;
 }
 
 export const SessionGrid: React.FC<SessionGridProps> = ({
@@ -23,6 +24,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
   onArchiveSessions,
   onUnarchiveSession,
   isArchivedView,
+  onInspectSession,
 }) => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -167,6 +169,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
               });
             }}
             onUnarchive={onUnarchiveSession}
+            onInspect={onInspectSession}
           />
         ))}
       </div>

@@ -37,6 +37,8 @@ export class SessionRegistry extends EventEmitter {
       startedAt: existing?.startedAt || now,
       lastSeenAt: now,
       historySummary: existing?.historySummary || [],
+      pinned: existing?.pinned,
+      archived: existing?.archived,
     };
 
     if (event.promptSnippet && (!existing || existing.promptSnippet !== event.promptSnippet)) {
@@ -49,6 +51,22 @@ export class SessionRegistry extends EventEmitter {
     this.sessions.set(event.sessionId, snapshot);
     this.emit('session_update', snapshot);
     return snapshot;
+  }
+
+  public updateMetadata(sessionId: string, metadata: { pinned?: boolean; archived?: boolean }): SessionSnapshot | undefined {
+    const session = this.sessions.get(sessionId);
+    if (!session) return undefined;
+
+    if (metadata.pinned !== undefined) {
+      session.pinned = metadata.pinned;
+    }
+    if (metadata.archived !== undefined) {
+      session.archived = metadata.archived;
+    }
+
+    this.sessions.set(sessionId, session);
+    this.emit('session_update', session);
+    return session;
   }
 
   public getSession(sessionId: string): SessionSnapshot | undefined {

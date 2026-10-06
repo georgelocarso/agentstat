@@ -89,4 +89,36 @@ describe('Collector Server API', () => {
       .set('Authorization', 'Bearer secret-123');
     expect(bearerRes.status).toBe(200);
   });
+
+  it('updates session metadata via PATCH and bulk POST', async () => {
+    const testEvent: AgentEvent = {
+      eventId: 'evt_meta',
+      sessionId: 'sess_meta_1',
+      agentType: 'agy',
+      state: 'working',
+      project: 'meta-project',
+      displayPath: '~/repos/meta-project',
+      timestamp: new Date().toISOString(),
+    };
+
+    await request(app).post('/api/events').send(testEvent);
+
+    // PATCH pinned
+    const patchRes = await request(app)
+      .patch('/api/sessions/sess_meta_1')
+      .send({ pinned: true, archived: false });
+    expect(patchRes.status).toBe(200);
+    expect(patchRes.body.session.pinned).toBe(true);
+    expect(patchRes.body.session.archived).toBe(false);
+
+    // Bulk archive
+    const bulkRes = await request(app)
+      .post('/api/sessions/bulk')
+      .send({ ids: ['sess_meta_1'], action: 'archive' });
+    expect(bulkRes.status).toBe(200);
+    expect(bulkRes.body.updatedCount).toBe(1);
+
+    const checkRes = await request(app).get('/api/sessions');
+    expect(checkRes.body.sessions[0].archived).toBe(true);
+  });
 });

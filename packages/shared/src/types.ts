@@ -38,6 +38,8 @@ export interface SessionSnapshot {
   startedAt: string;
   lastSeenAt: string;
   historySummary?: string[];
+  pinned?: boolean;
+  archived?: boolean;
 }
 
 /**

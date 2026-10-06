@@ -12,6 +12,7 @@ interface SessionCardProps {
   isArchived: boolean;
   onArchive: (sessionId: string) => void;
   onUnarchive: (sessionId: string) => void;
+  onInspect?: (session: SessionSnapshot) => void;
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({
@@ -23,6 +24,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   isArchived,
   onArchive,
   onUnarchive,
+  onInspect,
 }) => {
   const isWaiting = session.state === 'waiting_approval';
   const startedFormatted = new Date(session.startedAt).toLocaleTimeString();
@@ -141,7 +143,18 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" /> Started {startedFormatted}
         </span>
-        <span>Seen {lastSeenFormatted}</span>
+        <div className="flex items-center gap-3">
+          <span>Seen {lastSeenFormatted}</span>
+          {onInspect && (
+            <button
+              type="button"
+              onClick={() => onInspect(session)}
+              className="text-xs text-indigo-400 hover:text-indigo-300 font-medium px-2 py-0.5 rounded bg-indigo-500/10 hover:bg-indigo-500/20 transition-colors"
+            >
+              Inspect
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
