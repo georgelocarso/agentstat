@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.4.0 - 2026-10-06
+
+### Added
+
+- **Apple Design System Foundation**:
+  - SF Pro system typography with optical letter tracking and sizing.
+  - Translucent frosted glass materials (`apple-glass` with 24px blur and saturation boosts).
+  - Instant direct manipulation feedback (`active:scale` with zero input lag) and spring curves.
+- **Vibrant Status-Shaded Cards**:
+  - Distinct high-visibility translucent gradient tints per lifecycle state (Amber for approval, Electric Blue for working, Emerald for idle, Crimson for crashed, Graphite Slate for completed).
+  - Apple HIG-style material pills with glowing status indicator dots.
+- **Session Detail Inspector Modal**:
+  - Full-featured inspector for examining complete prompt inputs, un-truncated agent outputs, tool calls, branch names, and working paths.
+  - One-click copy controls for prompts, paths, and logs.
+  - Interactive approval response toolbar with quick `Approve (yes)`, `Reject (no)`, and custom reply inputs.
+- **Search & Quick-Filter Toolbar**:
+  - Real-time search across project names, directories, git branches, prompts, and outputs with `/` keyboard shortcut.
+- **Claude Code Watcher Integration**:
+  - Automatic discovery of Claude Code CLI sessions from `~/.claude/projects/**/<uuid>.jsonl`.
+  - Supports permission modes (`permissionMode: ask` -> `waiting_approval`), tool call logging, and session state tracking.
+- **Server-Side Metadata & Sync**:
+  - `PATCH /api/sessions/:id` and `POST /api/sessions/bulk` endpoints for cross-device synchronized pins and archives.
+  - `POST /api/sessions/:id/respond` interactive bridge.
+- **Cross-Platform Setup Documentation**:
+  - Added comprehensive `SETUP_GUIDE.md` with multi-OS support guidelines and autonomous AI agent installation prompts.
+
+### Fixed
+
+- Resolved modal event bubbling bug that caused inspector cards to close prematurely upon clicking.
+- Added safe fallbacks for missing or unparseable timestamps.
+
+---
+
 ## 0.3.0 - 2026-10-05
 
 ### Added

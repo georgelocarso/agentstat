@@ -165,7 +165,7 @@ export function App() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#090d16] text-slate-100">
+    <div className="min-h-screen flex flex-col bg-black text-[#f5f5f7] selection:bg-indigo-500/30 selection:text-white">
       <Header
         connected={connected}
         activeCount={statusCounts.all}

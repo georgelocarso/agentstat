@@ -76,14 +76,14 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
 
   if (sorted.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-4 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-900/20">
-        <div className="w-14 h-14 rounded-2xl bg-slate-800/80 flex items-center justify-center text-slate-400 mb-4">
-          <Bot className="w-7 h-7 text-indigo-400" />
+      <div className="flex flex-col items-center justify-center py-24 px-6 text-center border border-white/5 rounded-3xl bg-zinc-950/40 backdrop-blur-xl">
+        <div className="w-12 h-12 rounded-2xl bg-zinc-900/80 border border-white/5 flex items-center justify-center text-zinc-400 mb-3 shadow-inner">
+          <Bot className="w-6 h-6 text-indigo-400" />
         </div>
-        <h3 className="text-lg font-medium text-slate-200">
+        <h3 className="text-base font-semibold text-zinc-200 tracking-tight">
           {emptyMessage || 'No Active Agent Sessions'}
         </h3>
-        <p className="text-sm text-slate-400 max-w-sm mt-1">
+        <p className="text-xs text-zinc-400 max-w-sm mt-1 leading-relaxed">
           {emptyMessage
             ? 'Try selecting another status tab or launching a new session.'
             : 'Wrap your agent commands or start an agy session to monitor it live.'}
@@ -95,9 +95,9 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
   return (
     <div className="space-y-3">
       {/* ── Bulk action toolbar ───────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 px-1 min-h-[28px]">
+      <div className="flex items-center gap-3 px-1 min-h-[32px]">
         {/* Select all checkbox */}
-        <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer select-none">
           <input
             type="checkbox"
             checked={allSelected}
@@ -106,14 +106,14 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
             }}
             onChange={handleSelectAll}
             aria-label="Select all sessions"
-            className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 accent-indigo-500 cursor-pointer"
+            className="w-4 h-4 rounded-md border-zinc-600 bg-zinc-800/80 accent-indigo-500 cursor-pointer transition-transform active:scale-90"
           />
-          <span className="text-slate-500">Select all</span>
+          <span className="text-zinc-400 font-medium text-xs">Select all</span>
         </label>
 
         {selectedIds.size > 0 && (
           <>
-            <span className="text-xs text-slate-400 font-medium">
+            <span className="text-xs text-zinc-400 font-mono font-medium">
               {selectedIds.size} selected
             </span>
 
@@ -121,7 +121,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
               <button
                 type="button"
                 onClick={handleUnarchiveSelected}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-600/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/30 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition-all"
               >
                 <Archive className="w-3.5 h-3.5" />
                 Unarchive Selected
@@ -130,7 +130,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
               <button
                 type="button"
                 onClick={handleArchiveSelected}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-700/60 text-slate-300 border border-slate-600/60 hover:bg-slate-700 hover:text-slate-100 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-zinc-800/80 text-zinc-300 border border-zinc-700/60 hover:bg-zinc-700 transition-all"
               >
                 <Archive className="w-3.5 h-3.5" />
                 Archive Selected
@@ -141,7 +141,7 @@ export const SessionGrid: React.FC<SessionGridProps> = ({
               type="button"
               onClick={handleClearSelection}
               aria-label="Clear selection"
-              className="p-1 rounded-md text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors"
+              className="p-1 rounded-full text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>

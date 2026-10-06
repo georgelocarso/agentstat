@@ -90,8 +90,8 @@ export const SessionDetailModal: React.FC<SessionDetailModalProps> = ({
   };
 
   const isWaiting = session.state === 'waiting_approval';
-  const startedFormatted = new Date(session.startedAt).toLocaleString();
-  const lastSeenFormatted = new Date(session.lastSeenAt).toLocaleString();
+  const startedFormatted = session.startedAt ? new Date(session.startedAt).toLocaleString() : 'Just now';
+  const lastSeenFormatted = session.lastSeenAt ? new Date(session.lastSeenAt).toLocaleString() : 'Just now';
 
   // Handle escape key
   React.useEffect(() => {
@@ -103,15 +103,19 @@ export const SessionDetailModal: React.FC<SessionDetailModalProps> = ({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150"
+    >
       <div
-        className="w-full max-w-3xl max-h-[90vh] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-slate-100"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-3xl max-h-[90vh] bg-zinc-900 border border-white/10 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-zinc-100"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
         {/* Modal Header */}
-        <div className="flex items-start justify-between p-6 border-b border-slate-800/80 bg-slate-950/40">
+        <div className="flex items-start justify-between p-6 border-b border-white/5 bg-zinc-950/60">
           <div className="flex items-start gap-3 min-w-0">
             <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 mt-1">
               <Folder className="w-5 h-5" />

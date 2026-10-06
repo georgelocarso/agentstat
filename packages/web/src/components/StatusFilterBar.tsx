@@ -44,17 +44,17 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
       icon: Layers,
       count: statusCounts.all,
       activeColor: 'text-indigo-400',
-      selectedClasses: 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 border-indigo-500',
-      hoverClasses: 'hover:bg-slate-800/80 hover:text-slate-200 border-slate-800 text-slate-400',
+      selectedClasses: 'bg-white/10 text-white shadow-sm border-white/10',
+      hoverClasses: 'hover:bg-white/5 hover:text-zinc-200 border-transparent text-zinc-400',
     },
     {
       id: 'waiting_approval',
-      label: 'Pending Approval',
+      label: 'Approval',
       icon: AlertCircle,
       count: statusCounts.waiting_approval,
       activeColor: 'text-amber-400',
-      selectedClasses: 'bg-amber-500/20 text-amber-300 border-amber-500/60 shadow-md shadow-amber-500/20 ring-1 ring-amber-500/30',
-      hoverClasses: 'hover:bg-amber-950/30 hover:text-amber-300 border-slate-800 text-slate-400',
+      selectedClasses: 'bg-amber-500/20 text-amber-300 border-amber-500/30 shadow-sm',
+      hoverClasses: 'hover:bg-amber-950/20 hover:text-amber-300 border-transparent text-zinc-400',
     },
     {
       id: 'working',
@@ -62,26 +62,26 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
       icon: PlayCircle,
       count: statusCounts.working,
       activeColor: 'text-blue-400',
-      selectedClasses: 'bg-blue-600/25 text-blue-300 border-blue-500/60 shadow-md shadow-blue-500/20 ring-1 ring-blue-500/30',
-      hoverClasses: 'hover:bg-blue-950/30 hover:text-blue-300 border-slate-800 text-slate-400',
+      selectedClasses: 'bg-blue-500/20 text-blue-300 border-blue-500/30 shadow-sm',
+      hoverClasses: 'hover:bg-blue-950/20 hover:text-blue-300 border-transparent text-zinc-400',
     },
     {
       id: 'idle',
-      label: 'Idle (Ready)',
+      label: 'Idle',
       icon: CheckCircle2,
       count: statusCounts.idle,
       activeColor: 'text-emerald-400',
-      selectedClasses: 'bg-emerald-600/20 text-emerald-300 border-emerald-500/50 shadow-md ring-1 ring-emerald-500/30',
-      hoverClasses: 'hover:bg-emerald-950/30 hover:text-emerald-300 border-slate-800 text-slate-400',
+      selectedClasses: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 shadow-sm',
+      hoverClasses: 'hover:bg-emerald-950/20 hover:text-emerald-300 border-transparent text-zinc-400',
     },
     {
       id: 'completed',
       label: 'Completed',
       icon: CheckCircle2,
       count: statusCounts.completed,
-      activeColor: 'text-emerald-400',
-      selectedClasses: 'bg-emerald-600/25 text-emerald-300 border-emerald-500/60 shadow-md shadow-emerald-500/20 ring-1 ring-emerald-500/30',
-      hoverClasses: 'hover:bg-emerald-950/30 hover:text-emerald-300 border-slate-800 text-slate-400',
+      activeColor: 'text-zinc-400',
+      selectedClasses: 'bg-white/10 text-zinc-200 border-white/10 shadow-sm',
+      hoverClasses: 'hover:bg-white/5 hover:text-zinc-300 border-transparent text-zinc-400',
     },
     {
       id: 'crashed',
@@ -89,17 +89,17 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
       icon: XCircle,
       count: statusCounts.crashed,
       activeColor: 'text-red-400',
-      selectedClasses: 'bg-red-600/25 text-red-300 border-red-500/60 shadow-md shadow-red-500/20 ring-1 ring-red-500/30',
-      hoverClasses: 'hover:bg-red-950/30 hover:text-red-300 border-slate-800 text-slate-400',
+      selectedClasses: 'bg-red-500/20 text-red-300 border-red-500/30 shadow-sm',
+      hoverClasses: 'hover:bg-red-950/20 hover:text-red-300 border-transparent text-zinc-400',
     },
     {
       id: 'stale',
       label: 'Archived',
       icon: Clock,
       count: statusCounts.stale,
-      activeColor: 'text-slate-400',
-      selectedClasses: 'bg-slate-700/50 text-slate-200 border-slate-600 shadow-md ring-1 ring-slate-600/40',
-      hoverClasses: 'hover:bg-slate-800/80 hover:text-slate-300 border-slate-800 text-slate-400',
+      activeColor: 'text-zinc-400',
+      selectedClasses: 'bg-zinc-800/80 text-zinc-300 border-zinc-700/60 shadow-sm',
+      hoverClasses: 'hover:bg-zinc-800/50 hover:text-zinc-300 border-transparent text-zinc-400',
     },
   ];
 
@@ -108,7 +108,7 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
       <div className="flex flex-wrap items-center gap-3">
         <nav
           aria-label="Filter sessions by status"
-          className="flex items-center gap-2 p-1 rounded-xl bg-slate-900/60 border border-slate-800/90 w-max overflow-x-auto"
+          className="flex items-center gap-1.5 p-1 rounded-2xl bg-zinc-900/60 border border-white/5 backdrop-blur-xl w-max overflow-x-auto"
         >
           {filters.map((filter) => {
             const isSelected = selectedStatus === filter.id;
@@ -122,21 +122,21 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
                 role="tab"
                 aria-selected={isSelected}
                 onClick={() => onSelectStatus(filter.id)}
-                className={`group relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
+                className={`group relative flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all duration-150 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 ${
                   isSelected ? filter.selectedClasses : filter.hoverClasses
                 }`}
               >
                 <Icon
-                  className={`w-3.5 h-3.5 transition-transform group-hover:scale-110 ${
-                    isSelected ? 'scale-105' : 'text-slate-500 group-hover:text-slate-300'
+                  className={`w-3.5 h-3.5 transition-transform group-hover:scale-105 ${
+                    isSelected ? 'scale-105' : 'text-zinc-500 group-hover:text-zinc-300'
                   }`}
                 />
                 <span>{filter.label}</span>
                 <span
                   className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono leading-none transition-colors ${
                     isSelected
-                      ? 'bg-black/30 text-white font-bold'
-                      : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700 group-hover:text-slate-200'
+                      ? 'bg-black/30 text-white font-semibold'
+                      : 'bg-zinc-800/80 text-zinc-400 group-hover:bg-zinc-800 group-hover:text-zinc-300'
                   }`}
                 >
                   {count}
@@ -146,17 +146,17 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
           })}
         </nav>
 
-        <label className="flex items-center gap-2 shrink-0 rounded-xl bg-slate-900/60 border border-slate-800/90 px-3 py-1.5 text-xs text-slate-400">
-          <span className="whitespace-nowrap">Agent</span>
+        <label className="flex items-center gap-2 shrink-0 rounded-2xl bg-zinc-900/60 border border-white/5 backdrop-blur-xl px-3 py-1.5 text-xs text-zinc-400">
+          <span className="whitespace-nowrap font-medium">Agent</span>
           <select
             aria-label="Filter sessions by agent"
             value={selectedAgent}
             onChange={(event) => onSelectAgent(event.target.value)}
-            className="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer"
+            className="bg-transparent text-zinc-200 font-medium focus:outline-none cursor-pointer"
           >
-            <option value="all" className="bg-slate-900">All agents ({statusCounts.all})</option>
+            <option value="all" className="bg-zinc-900">All agents ({statusCounts.all})</option>
             {agentTypes.map((agentType) => (
-              <option key={agentType} value={agentType} className="bg-slate-900">
+              <option key={agentType} value={agentType} className="bg-zinc-900">
                 {agentType} ({agentCounts[agentType]})
               </option>
             ))}
@@ -166,19 +166,19 @@ export const StatusFilterBar: React.FC<StatusFilterBarProps> = ({
 
       {/* Search Input */}
       <div className="relative min-w-[240px] md:w-72">
-        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+        <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search projects, branch, prompt... (Press /)"
-          className="w-full pl-8 pr-8 py-1.5 rounded-xl bg-slate-900/60 border border-slate-800/90 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/70 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+          className="w-full pl-8 pr-8 py-1.5 rounded-2xl bg-zinc-900/60 border border-white/5 backdrop-blur-xl text-xs text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
         />
         {searchQuery && (
           <button
             type="button"
             onClick={() => onSearchChange('')}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-0.5"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 p-0.5 rounded-full transition-colors"
             aria-label="Clear search"
           >
             <X className="w-3.5 h-3.5" />
