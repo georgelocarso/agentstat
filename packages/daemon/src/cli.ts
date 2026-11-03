@@ -57,6 +57,9 @@ program
     const { ClaudeSessionWatcher } = await import('./watcher/claude-session-watcher.js');
     const claudeWatcher = new ClaudeSessionWatcher(registry);
     claudeWatcher.start();
+    const { HermesWatcher } = await import('./hermes/hermes-watcher.js');
+    const hermesWatcher = new HermesWatcher(registry);
+    hermesWatcher.start();
 
     const server = app.listen(port, host, () => {
       console.log(`\n\x1b[36m⚡ [agentstat] Collector Daemon running on http://${host}:${port}\x1b[0m`);
